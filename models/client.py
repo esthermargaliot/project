@@ -14,7 +14,7 @@ spouse_association = Table(
 
 
 class Client(Base):
-    __tablename__ = 'clients'
+    __tablenaדZme__ = 'clients'
 
     mispar_zehut = Column(String(9), primary_key=True)  # מספר זהות
     shem_mishpacha = Column(String(100))

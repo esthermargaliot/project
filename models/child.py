@@ -2,6 +2,9 @@ from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
+from models.client import Base
+
+
 class Child(Base):
     __tablename__ = 'children'
 

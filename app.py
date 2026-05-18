@@ -8,6 +8,8 @@ extract_teudat_zehut.py
     pip install pymupdf pytesseract Pillow
     sudo apt-get install tesseract-ocr tesseract-ocr-heb
 """
+import pyodbc
+
 
 import re
 import fitz  # PyMuPDF
@@ -270,6 +272,7 @@ def extract_and_print(pdf_path: str) -> dict:
 if __name__ == "__main__":
     import sys
 
+    print(pyodbc.drivers())
     data = parse_teudat_zehut("Y:\רחלי ק\ספח תעודת זהות דיגיטלי.pdf")
     print(data.mispar_zehut)  # '123456789'
     print(data.shem_mishpacha)  # 'כהן'

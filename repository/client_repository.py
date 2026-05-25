@@ -1,34 +1,27 @@
 # repository/client_repository.py
-from sqlalchemy.orm import Session
 from models.client import Client
 
 class ClientRepository:
-    def __init__(self, session: Session):
+    def __init__(self, session):
         self.session = session
-
-    def add(self, client: Client):
-        self.session.add(client)
-        self.session.commit()
-        return client
 
     def get_all(self):
         return self.session.query(Client).all()
 
-    def get_by_id(self, mispar_zehut: str):
-        return self.session.query(Client).get(mispar_zehut)
+    def get_by_id(self, mispar_zehut):
+        return self.session.query(Client).filter_by(mispar_zehut=mispar_zehut).first()
 
-    def update(self, mispar_zehut: str, new_data: Client):
-        client = self.get_by_id(mispar_zehut)
-        if client:
-            for key, value in new_data.__dict__.items():
-                if key != "_sa_instance_state":
-                    setattr(client, key, value)
-            self.session.commit()
-        return client
+    def add(self, client):
+            try:
+                self.session.add(client)
+                self.session.commit()
+                print("ID saved:", client.mispar_zehut)
+            except Exception as e:
+                self.session.rollback()
+                raise e
+    def update(self, client):
+        self.session.commit()
 
-    def delete(self, mispar_zehut: str):
-        client = self.get_by_id(mispar_zehut)
-        if client:
-            self.session.delete(client)
-            self.session.commit()
-        return client
+    def delete(self, client):
+        self.session.delete(client)
+        self.session.commit()

@@ -1,28 +1,30 @@
+# controllers/spouse_controller.py
 from flask import Blueprint, request, jsonify
-from dto.spouse_dto import SpouseDTO
 from services.spouse_service import SpouseService
-from repository.spouse_repository import SpouseRepository
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from models.client import Base
 
-engine = create_engine('sqlite:///clients.db')
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-session = Session()
+spouse_bp = Blueprint('spouse_bp', __name__)
+service = SpouseService()
 
-repo = SpouseRepository(session)
-service = SpouseService(repo)
+# קבלת כל בני הזוג של לקוח
+@spouse_bp.route('/<client_id>', methods=['GET'])
+def get_spouses(client_id):
+    spouses = service.get_spouses(client_id)
+    if spouses is None:
+        return jsonify({'message': 'Client not found'}), 404
+    return jsonify(spouses), 200
 
-spouse_blueprint = Blueprint('spouses', __name__)
-
-@spouse_blueprint.route('', methods=['POST'])
-def add_spouse():
-    dto = SpouseDTO(**request.get_json())
-    service.add_spouse(dto)
+# הוספת בן/בת זוג ללקוח
+@spouse_bp.route('/<client_id>/<spouse_id>', methods=['POST'])
+def add_spouse(client_id, spouse_id):
+    success = service.add_spouse(client_id, spouse_id)
+    if not success:
+        return jsonify({'message': 'Client or spouse not found'}), 404
     return jsonify({'message': 'Spouse added'}), 201
 
-@spouse_blueprint.route('/<string:client_id>', methods=['GET'])
-def get_spouses(client_id):
-    spouses = service.get_spouses_for_client(client_id)
-    return jsonify([s.to_dict() for s in spouses])
+# הסרת בן/בת זוג מלקוח
+@spouse_bp.route('/<client_id>/<spouse_id>', methods=['DELETE'])
+def remove_spouse(client_id, spouse_id):
+    success = service.remove_spouse(client_id, spouse_id)
+    if not success:
+        return jsonify({'message': 'Client or spouse not found'}), 404
+    return jsonify({'message': 'Spouse removed'}), 200

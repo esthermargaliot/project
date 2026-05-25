@@ -1,28 +1,32 @@
+# controllers/child_controller.py
 from flask import Blueprint, request, jsonify
-from dto.child_dto import ChildDTO
 from services.child_service import ChildService
-from repository.child_repository import ChildRepository
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from models.client import Base
 
-engine = create_engine('sqlite:///clients.db')
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-session = Session()
+child_bp = Blueprint('child_bp', __name__)
+child_service = ChildService()
 
-repo = ChildRepository(session)
-service = ChildService(repo)
+@child_bp.route('/', methods=['GET'])
+def get_children():
+    children = child_service.get_all_children()
+    return jsonify(children)
 
-child_blueprint = Blueprint('children', __name__)
+@child_bp.route('/', methods=['POST'])
+def create_child():
+    data = request.json
+    child_service.create_child(data)
+    return jsonify({'message': 'Child created'}), 201
 
-@child_blueprint.route('', methods=['POST'])
-def add_child():
-    dto = ChildDTO(**request.get_json())
-    service.add_child(dto)
-    return jsonify({'message': 'Child added'}), 201
+@child_bp.route('/<int:child_id>', methods=['PUT'])
+def update_child(child_id):
+    data = request.json
+    updated = child_service.update_child(child_id, data)
+    if not updated:
+        return jsonify({'message': 'Child not found'}), 404
+    return jsonify({'message': 'Child updated'})
 
-@child_blueprint.route('/<string:client_id>', methods=['GET'])
-def get_children(client_id):
-    children = service.get_children_for_client(client_id)
-    return jsonify([c.to_dict() for c in children])
+@child_bp.route('/<int:child_id>', methods=['DELETE'])
+def delete_child(child_id):
+    deleted = child_service.delete_child(child_id)
+    if not deleted:
+        return jsonify({'message': 'Child not found'}), 404
+    return jsonify({'message': 'Child deleted'})

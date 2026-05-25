@@ -2,19 +2,15 @@ from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+from models.spouses import SpouseAssociation
 
-# טבלת קשר Many-to-Many עבור בני זוג
-spouse_association = Table(
-    'spouses',
-    Base.metadata,
-    Column('client_id', String(9), ForeignKey('clients.mispar_zehut'), primary_key=True),
-    Column('spouse_id', String(9), ForeignKey('clients.mispar_zehut'), primary_key=True)
-)
+from models.base import Base
+
+
 
 
 class Client(Base):
-    __tablenaדZme__ = 'clients'
+    __tablename__ = 'client'
 
     mispar_zehut = Column(String(9), primary_key=True)  # מספר זהות
     shem_mishpacha = Column(String(100))
@@ -38,23 +34,29 @@ class Client(Base):
     )
 
     # קשר לבן זוג (Many-to-Many)
+    # models/client.py
     spouses = relationship(
         "Client",
-        secondary=spouse_association,
-        primaryjoin=mispar_zehut == spouse_association.c.person_id,
-        secondaryjoin=mispar_zehut == spouse_association.c.spouse_id,
-        backref="partners"
+        secondary=SpouseAssociation,
+        primaryjoin=mispar_zehut == SpouseAssociation.c.client_id,
+        secondaryjoin=mispar_zehut == SpouseAssociation.c.spouse_id,
+        backref="spouses_of"
     )
 
+    def to_dict(self):
+        return {
+            "mispar_zehut": self.mispar_zehut,
+            "shem_mishpacha": self.shem_mishpacha,
+            "shem_prati": self.shem_prati,
+            "shem_av": self.shem_av,
+            "taarich_leida": str(self.taarich_leida) if self.taarich_leida else None,
+            "makom_leida": self.makom_leida,
+            "aretz_leida": self.aretz_leida,
+            "min": self.min,
+            "leom": self.leom,
+            "dat": self.dat,
+            "status_mishpachti": self.status_mishpachti,
+            "taarich_aliya": str(self.taarich_aliya) if self.taarich_aliya else None,
+            "taarich_tokef": str(self.taarich_tokef) if self.taarich_tokef else None
+        }
 
-class Child(Base):
-    __tablename__ = 'children'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(100))
-    last_name = Column(String(100))
-    date_of_birth = Column(Date)
-    parent_id = Column(String(9), ForeignKey('clients.mispar_zehut'))
-
-    # חזרה ללקוח
-    parent = relationship("Client", back_populates="children")

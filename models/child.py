@@ -1,17 +1,16 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-
-from models.client import Base
-
+from models.base import Base
 
 class Child(Base):
-    __tablename__ = 'children'
+    __tablename__ = 'child'
 
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=True)
-    birth_date = Column(Date, nullable=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mispar_zehut_parent = Column(String(9), ForeignKey('client.mispar_zehut'))
+    shem_mishpacha = Column(String(100))
+    shem_prati = Column(String(100))
+    taarich_leida = Column(Date)
 
-    parent_id = Column(Integer, ForeignKey('clients.id'))
-    parent = relationship('Client', back_populates='children')
+    # קשר חזרה להורה
+    parent = relationship("Client", back_populates="children")

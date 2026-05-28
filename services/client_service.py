@@ -1,4 +1,6 @@
 # services/client_service.py
+from models.child import Child
+from models.spouse import Spouse
 from repository.client_repository import ClientRepository
 from models.client import Client
 from db_connection import get_session
@@ -30,3 +32,35 @@ class ClientService:
             return False
         self.repo.delete(client)
         return True
+
+    def create_client_with_spouse_and_child(self, client_data, spouse_data=None, children_data=None):
+        try:
+            # בדיקה אם הלקוח כבר קיים
+            existing_client = self.session.query(Client).filter_by(id=client_data['id']).first()
+            if existing_client:
+                return {"error": "Client already exists"}
+
+            client = Client(**client_data)
+
+            # אם יש בן זוג
+            if spouse_data:
+                existing_spouse = self.session.query(Spouse).filter_by(id=spouse_data['id']).first()
+                if existing_spouse:
+                    client.spouse = existing_spouse
+                else:
+                    spouse = Spouse(**spouse_data)
+                    client.spouse = spouse
+
+            # ילדים
+            if children_data:
+                for c_data in children_data:
+                    child = Child(**c_data)
+                    client.children.append(child)
+
+            self.session.add(client)
+            self.session.commit()
+            return client
+
+        except Exception as e:
+            self.session.rollback()
+            raise e

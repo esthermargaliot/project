@@ -13,31 +13,50 @@ import pyodbc
 
 import re
 import fitz  # PyMuPDF
-import pytesseract
+
 from PIL import Image
 import io
 from dataclasses import dataclass, asdict
 from typing import Optional
 import json
+from PIL import ImageFilter
+import os
+import pytesseract
 
+# נתיב ל־tesseract.exe שלך
+#pytesseract.pytesseract.tesseract_cmd = r"Y:\שונות\רחלי ק\OCR\Tesseract-OCR\tesseract.exe"
 
+# חשוב: תיקיית השפות (tessdata)
+#os.environ["TESSDATA_PREFIX"] = r"C:\Program Files\Tesseract-OCR"
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Users\mykoffe\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
+# בדיקה שהשפות נטענות
+#print(pytesseract.get_languages(config=''))
+
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 @dataclass
 class TeudatZehutData:
-    """מבנה נתונים לספח תז."""
-    mispar_zehut: Optional[str] = None       # מספר זהות
-    shem_mishpacha: Optional[str] = None     # שם משפחה
-    shem_prati: Optional[str] = None         # שם פרטי
-    shem_av: Optional[str] = None            # שם האב
-    taarich_leida: Optional[str] = None      # תאריך לידה
-    makom_leida: Optional[str] = None        # מקום לידה
+    """
+
+    lastName = Column(String(100))
+    firstName = Column(String(100))
+
+    street = Column(String(100))
+    city = Column(String(100))
+    HouseNumber = Column(String(100))
+    ApartmentNumber = Column(String(100))
+מבנה נתונים לספח תז."""
+    id: Optional[str] = None       # מספר זהות
+    lastName: Optional[str] = None     # שם משפחה
+    firstName: Optional[str] = None         # שם פרטי
+    street: Optional[str] = None            # שם האב
+    city: Optional[str] = None      # תאריך לידה
+    HouseNumber: Optional[str] = None        # מקום לידה
     min: Optional[str] = None                # מין
     leom: Optional[str] = None               # לאום
     dat: Optional[str] = None                # דת
     status_mishpachti: Optional[str] = None  # מצב משפחתי
     aretz_leida: Optional[str] = None        # ארץ לידה
-    taarich_aliya: Optional[str] = None      # תאריך עלייה
+    #taarich_aliya: Optional[str] = None      # תאריך עלייה
     taarich_tokef: Optional[str] = None      # תאריך תוקף
     raw_text: Optional[str] = None           # טקסט גולמי (לדיבאג)
 
@@ -56,20 +75,22 @@ def _extract_text_from_pdf(pdf_path: str) -> str:
             full_text += text + "\n"
         else:
             # PDF סרוק — רסטריזציה + OCR
-            mat = fitz.Matrix(3, 3)  # רזולוציה גבוהה לדיוק OCR
-            pix = page.get_pixmap(matrix=mat)
+            mat = fitz.Matrix(5, 5)
+            pix = page.get_pixmap(matrix=mat, colorspace=fitz.csGRAY)
             img_data = pix.tobytes("png")
             img = Image.open(io.BytesIO(img_data))
-
+            img = img.convert("L")
+            img = img.filter(ImageFilter.SHARPEN)
             ocr_text = pytesseract.image_to_string(
                 img,
                 lang="heb+eng",
-                config="--psm 6 --oem 3"
+                config="--oem 3 --psm 4"
             )
             full_text += ocr_text + "\n"
 
     doc.close()
     return full_text
+
 
 
 def _clean(text: str) -> str:
@@ -111,21 +132,7 @@ def _extract_date(text: str, field_keywords: list[str]) -> Optional[str]:
 
 
 def parse_teudat_zehut(pdf_path: str) -> TeudatZehutData:
-    '''
-    פונקציה ראשית — מקבלת נתיב לקובץ PDF של ספח תז
-    ומחזירה אובייקט TeudatZehutData עם הנתונים המחולצים.
 
-    Args:
-        pdf_path: נתיב לקובץ PDF (סרוק או עם טקסט).
-
-    Returns:
-        TeudatZehutData עם השדות שנמצאו.
-
-    Example:
-        >>> data = parse_teudat_zehut("sefach_tz.pdf")
-        >>> print(data.mispar_zehut)
-        '123456789'
-'''
     import re
 
     def clean_ocr_text(text: str) -> str:
@@ -137,9 +144,22 @@ def parse_teudat_zehut(pdf_path: str) -> TeudatZehutData:
         text = re.sub(r"\s+", " ", text)
         return text
 
+    import unicodedata
+
+    def clean_ocr_text(text: str) -> str:
+        # הסרת תווי בקרה
+        text = re.sub(r"[\u200e\u200f\u202c\u202d]", "", text)
+        # הסרת סימנים מיוחדים
+        text = re.sub(r"[^\w\s\d\u0590-\u05FF./-]", " ", text)
+        # המרת ריבוי רווחים לרווח אחד
+        text = re.sub(r"\s+", " ", text)
+        # נורמליזציה של תווים בעברית
+        text = unicodedata.normalize('NFC', text)
+        return text.strip()
 
     raw_text = _extract_text_from_pdf(pdf_path)
-    data = TeudatZehutData(raw_text=raw_text)
+    clean_text = clean_ocr_text(raw_text)
+    data = TeudatZehutData(raw_text=clean_text)
 
     # מספר זהות
     data.mispar_zehut = _extract_id_number(raw_text)
@@ -169,8 +189,8 @@ def parse_teudat_zehut(pdf_path: str) -> TeudatZehutData:
     ])
 
     # תאריך לידה
-    data.taarich_leida = _extract_date(raw_text, [
-        "תאריך לידה", "תאריך\s*לידה", "DATE OF BIRTH", "D\.O\.B"
+    data.taarich_leida = _extract_date(clean_text, [
+        r"תאריך לידה", r"DATE OF BIRTH", r"D\.O\.B"
     ])
 
     # מקום לידה
@@ -272,8 +292,9 @@ def extract_and_print(pdf_path: str) -> dict:
 if __name__ == "__main__":
     import sys
 
-    print(pyodbc.drivers())
-    data = parse_teudat_zehut("Y:\רחלי ק\ספח תעודת זהות דיגיטלי.pdf")
+
+    data = parse_teudat_zehut(r"Y:\שונות\רחלי ק\ספח תעודת זהות דיגיטלי.pdf")
+    print(data.raw_text)
     print(data.mispar_zehut)  # '123456789'
     print(data.shem_mishpacha)  # 'כהן'
     if len(sys.argv) < 2:
@@ -283,7 +304,7 @@ if __name__ == "__main__":
     path = sys.argv[1]
     print(f"\n📄 מחלץ נתונים מ: {path}\n")
     # הנתיב לקובץ PDF שאת רוצה לחלץ ממנו נתונים
-    pdf_path = r"Y:\רחלי ק\ספח תעודת זהות דיגיטלי.pdf"
+    pdf_path = r"Y:\שונות\רחלי ק\ספח תעודת זהות דיגיטלי.pdf"
 
     # קריאה לפונקציות מתוך אותו קובץ בלי import מעגלי
     data = parse_teudat_zehut(pdf_path)

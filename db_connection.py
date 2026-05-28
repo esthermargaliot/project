@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from models.base import Base
 from models.client import Client
 from models.child import Child
-from models.spouses import SpouseAssociation
+from models.spouse import Spouse
 
 # ← החלף את הפרמטרים לפי הגדרות SQL Server בבית הספר
 SERVER   = 'localhost'                  # שם השרת

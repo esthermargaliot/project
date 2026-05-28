@@ -25,3 +25,10 @@ class ClientRepository:
     def delete(self, client):
         self.session.delete(client)
         self.session.commit()
+
+    def save_all(self, client, spouse, child):
+            self.session.add(client)
+            self.session.add(spouse)
+            self.session.add(child)
+            self.session.commit()
+            return client, spouse, child

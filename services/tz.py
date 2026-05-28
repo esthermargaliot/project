@@ -310,3 +310,5 @@ if __name__ == "__main__":
     data = parse_teudat_zehut(pdf_path)
     convert_pdf_to_bw(pdf_path, r"Y:\רחלי ק\שם.pdf")
     extract_and_print(r"Y:\רחלי ק\שם.pdf")
+
+

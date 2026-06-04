@@ -1,34 +1,32 @@
 # services/spouse_service.py
+from models.spouse import Spouse
+from repository.spouses_repository import SpouseRepository
 from db_connection import get_session
-from repository.client_repository import ClientRepository
 
 class SpouseService:
     def __init__(self):
-        session = get_session()
-        self.client_repo = ClientRepository(session)
+        self.session = get_session()
+        self.spouse_repo = SpouseRepository(self.session)
 
-    def get_spouses(self, client_id):
-        client = self.client_repo.get_by_id(client_id)
-        if not client:
-            return None
-        return [s.to_dict() for s in client.spouses]
+    def create_spouse(self, data):
+        spouse = Spouse(**data)
+        self.spouse_repo.add(spouse)
+        return spouse
 
-    def add_spouse(self, client_id, spouse_id):
-        client = self.client_repo.get_by_id(client_id)
-        spouse = self.client_repo.get_by_id(spouse_id)
-        if not client or not spouse:
+    def delete_spouse(self, spouse_id):
+        spouse = self.spouse_repo.get_by_id(spouse_id)
+        if not spouse:
             return False
-        if spouse not in client.spouses:
-            client.spouses.append(spouse)
-            self.client_repo.update(client)
+        self.spouse_repo.delete(spouse)
         return True
 
-    def remove_spouse(self, client_id, spouse_id):
-        client = self.client_repo.get_by_id(client_id)
-        spouse = self.client_repo.get_by_id(spouse_id)
-        if not client or not spouse:
-            return False
-        if spouse in client.spouses:
-            client.spouses.remove(spouse)
-            self.client_repo.update(client)
-        return True
+    def get_all_spouses(self):
+        return [s.to_dict() for s in self.spouse_repo.get_all()]
+
+    def get_spouse_by_id(self, spouse_id):
+        spouse = self.spouse_repo.get_by_id(spouse_id)
+        return spouse.to_dict() if spouse else None
+
+    def get_spouse_by_client_id(self, client_id):
+        spouse = self.spouse_repo.get_by_client_id(client_id)
+        return spouse.to_dict() if spouse else None

@@ -1,17 +1,28 @@
 # controllers/spouse_controller.py
 from flask import Blueprint, request, jsonify
+
+
 from services.spouse_service import SpouseService
 
 spouse_bp = Blueprint('spouse_bp', __name__)
 service = SpouseService()
 
-# קבלת כל בני הזוג של לקוח
-@spouse_bp.route('/<client_id>', methods=['GET'])
-def get_spouses(client_id):
-    spouses = service.get_spouses(client_id)
-    if spouses is None:
-        return jsonify({'message': 'Client not found'}), 404
+@spouse_bp.route('/', methods=['GET'])
+def get_spouses():
+    spouses = service.get_all_spouses()
     return jsonify(spouses), 200
+@spouse_bp.route('/client/<client_id>', methods=['GET'])
+def get_spouse_by_client_id(client_id):
+    result = service.get_spouse_by_client_id(client_id)
+    if not result:
+        return jsonify({"error": "Spouse not found for this client"}), 404
+    return jsonify(result), 200
+@spouse_bp.route('/<spouse_id>', methods=['GET'])
+def get_spouse_by_id(spouse_id):
+    result = service.get_spouse_by_id(spouse_id)
+    if not result:
+        return jsonify({"error": "Spouse not found"}), 404
+    return jsonify(result), 200
 
 # הוספת בן/בת זוג ללקוח
 @spouse_bp.route('/<client_id>/<spouse_id>', methods=['POST'])

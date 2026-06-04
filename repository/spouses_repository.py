@@ -1,23 +1,20 @@
-# # repository/spouse_repository.py
-#
-#
-# class SpouseRepository:
-#     def __init__(self, session):
-#         self.session = session
-#
-#     def get_all_by_client(self, client_id):
-#         return self.session.query(Spouse).filter_by(client_id=client_id).all()
-#
-#     def get_by_id(self, spouse_id):
-#         return self.session.query(Spouse).filter_by(id=spouse_id).first()
-#
-#     def add(self, spouse):
-#         self.session.add(spouse)
-#         self.session.commit()
-#
-#     def update(self, spouse):
-#         self.session.commit()
-#
-#     def delete(self, spouse):
-#         self.session.delete(spouse)
-#         self.session.commit()
+from models.spouse import Spouse
+
+class SpouseRepository:
+    def __init__(self, session):
+        self.session = session
+
+    def get_all(self):
+        return self.session.query(Spouse).all()
+
+    def get_by_id(self, id):
+        return self.session.query(Spouse).filter_by(id=id).first()
+
+    def add(self, spouse):
+        self.session.add(spouse)
+
+    def delete(self, spouse):
+        self.session.delete(spouse)
+
+    def get_by_client_id(self, client_id):
+            return self.session.query(Spouse).filter_by(client_id=client_id).first()

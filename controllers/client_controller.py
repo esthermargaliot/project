@@ -1,12 +1,14 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 
+from repository import client_repository, child_repository, spouses_repository
+from repository.child_repository import ChildRepository
 from services.client_service import ClientService
-from services.tz import TZService
+from services.tz import TeudatZehutData
 
 client_bp = Blueprint('client_bp', __name__)
 
 client_service = ClientService()
-tz_service = TZService()
+tz_service = TeudatZehutData()
 
 
 # 🔹 GET - כל הלקוחות
@@ -26,6 +28,20 @@ def upload_tz():
 
     client, spouse, child = tz_service.process_tz_file(file_path)
 
+    try:
+        client_repository.add(client)
+
+        if spouse:
+            spouses_repository.add(spouse)
+
+        if child:
+            ChildRepository.add(child)
+
+        session.commit()
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
     return jsonify({
         "client": client.to_dict(),
         "spouse": spouse.to_dict() if spouse else None,

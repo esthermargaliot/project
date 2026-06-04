@@ -31,8 +31,7 @@ import pytesseract
 
 # בדיקה שהשפות נטענות
 #print(pytesseract.get_languages(config=''))
-
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = r"C:\Users\mykoffe\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
 @dataclass
 class TeudatZehutData:
     """

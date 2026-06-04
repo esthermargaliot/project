@@ -1,4 +1,3 @@
-# repository/child_repository.py
 from models.child import Child
 
 class ChildRepository:
@@ -8,16 +7,18 @@ class ChildRepository:
     def get_all(self):
         return self.session.query(Child).all()
 
-    def get_by_id(self, child_id):
-        return self.session.query(Child).filter_by(id=child_id).first()
+    def get_by_id(self, id):
+        return self.session.query(Child).filter_by(id=id).first()
 
     def add(self, child):
         self.session.add(child)
-        self.session.commit()
-
-    def update(self, child):
-        self.session.commit()
 
     def delete(self, child):
         self.session.delete(child)
-        self.session.commit()
+
+
+    def get_by_parent_id(self, parent_id):
+        return self.session.query(Child).filter_by(parent_id=parent_id).all()
+
+    def get_by_second_parent_id(self, second_parent_id):
+        return self.session.query(Child).filter_by(second_parent_id=second_parent_id).all()

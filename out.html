@@ -1,0 +1,73 @@
+<html dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<title>טופס דוגמה</title>
+</head>
+<body>
+<h2>פרטי לקוח</h2>
+<div id="client-section">
+<label for="client.id">מספר זהות</label>
+<input id="client.id" name="client.id" type="text" value="123456789"/>
+<label for="client.firstName">שם פרטי</label>
+<input id="client.firstName" name="client.firstName" type="text" value="דוד"/>
+<label for="client.lastName">שם משפחה</label>
+<input id="client.lastName" name="client.lastName" type="text" value="כהן"/>
+<label for="client.city">עיר</label>
+<input id="client.city" name="client.city" type="text" value="תל אביב"/>
+</div>
+<hr/>
+<h2>בן / בת זוג</h2>
+<div id="spouse-section">
+<label for="spouse.id">מספר זהות</label>
+<input id="spouse.id" name="spouse.id" type="text" value="987654321"/>
+<label for="spouse.firstName">שם פרטי</label>
+<input id="spouse.firstName" name="spouse.firstName" type="text" value="שרה"/>
+<label for="spouse.lastName">שם משפחה</label>
+<input id="spouse.lastName" name="spouse.lastName" type="text" value="כהן"/>
+</div>
+<hr/>
+<h2>ילדים</h2>
+<div id="children-container">
+<!-- ילד ראשון כבר קיים -->
+<div class="child">
+<label for="children.0.id">מספר זהות</label>
+<input id="children.0.id" name="children.0.id" type="text" value="111111111"/>
+<label for="children.0.first_name">שם פרטי</label>
+<input id="children.0.first_name" name="children.0.first_name" type="text" value="יוסי"/>
+<label for="children.0.date_of_birth">תאריך לידה</label>
+<input id="children.0.date_of_birth" name="children.0.date_of_birth" type="text" value="2015-06-10"/>
+</div>
+<div class="child">
+<label for="children.1.id">מספר זהות</label>
+<input id="children.1.id" name="children.1.id" type="text" value="222222222"/>
+<label for="children.1.first_name">שם פרטי</label>
+<input id="children.1.first_name" name="children.1.first_name" type="text" value="מיכל"/>
+<label for="children.1.date_of_birth">תאריך לידה</label>
+<input id="children.1.date_of_birth" name="children.1.date_of_birth" type="text" value="2018-09-21"/>
+</div></div>
+<button onclick="addChild()" type="button">הוסף ילד</button>
+<script>
+let index = 1;
+
+function addChild() {
+
+    const container = document.getElementById("children-container");
+
+    const div = document.createElement("div");
+    div.className = "child";
+
+    div.innerHTML = `
+        <label for="children.${index}.id">מספר זהות</label>
+        <input id="children.${index}.id" name="children.${index}.id" type="text">
+
+        <label for="children.${index}.first_name">שם פרטי</label>
+        <input id="children.${index}.first_name" name="children.${index}.first_name" type="text">
+
+        <label for="children.${index}.date_of_birth">תאריך לידה</label>
+        <input id="children.${index}.date_of_birth" name="children.${index}.date_of_birth" type="text">
+    `;
+
+    container.appendChild(div);
+    index++;
+}
+</script>
+</body></html>

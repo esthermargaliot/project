@@ -6,7 +6,7 @@ from models.base import Base
 class Spouse(Base):
     __tablename__ = "spouse"
 
-    id = Column(String(9), primary_key=True)  # מספר זהות של בן הזוג
+    id = Column(String(9), primary_key=True)  #
 
     client_id = Column(String(9), ForeignKey("client.id"))
 
@@ -18,7 +18,6 @@ class Spouse(Base):
         "Client",
         back_populates="spouse"
     )
-
     children = relationship("Child", back_populates="second_parent", cascade="all, delete-orphan")
     def to_dict(self):
         return {

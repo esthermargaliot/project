@@ -6,6 +6,5 @@ from datetime import date
 @dataclass
 class SpouseDTO:
     first_name: str
-    last_name: Optional[str] = None
-    birth_date: Optional[date] = None
-    partner_id: Optional[str] = None
+    last_name: str
+    marital_status: Optional[str]

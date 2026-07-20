@@ -8,8 +8,8 @@ class ClientRepository:
     def get_all(self):
         return self.session.query(Client).all()
 
-    def get_by_id(self, mispar_zehut):
-        return self.session.query(Client).filter_by(mispar_zehut=mispar_zehut).first()
+    def get_by_id(self, id):
+        return self.session.query(Client).filter_by(id=id).first()
 
     def add(self, client):
         self.session.add(client)

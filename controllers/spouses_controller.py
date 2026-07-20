@@ -1,12 +1,12 @@
 # controllers/spouse_controller.py
 from flask import Blueprint, request, jsonify
 
-
+from db_connection import get_session
+from repository.spouses_repository import SpouseRepository
 from services.spouse_service import SpouseService
 
 spouse_bp = Blueprint('spouse_bp', __name__)
 service = SpouseService()
-
 @spouse_bp.route('/', methods=['GET'])
 def get_spouses():
     spouses = service.get_all_spouses()

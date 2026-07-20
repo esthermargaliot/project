@@ -1,9 +1,13 @@
 # controllers/child_controller.py
 from flask import Blueprint, request, jsonify
+
+from db_connection import get_session
+from repository import child_repository
 from services.child_service import ChildService
 
 child_bp = Blueprint('child_bp', __name__)
 child_service = ChildService()
+
 
 @child_bp.route('/', methods=['GET'])
 def get_children():
